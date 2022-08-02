@@ -27,6 +27,10 @@ module.exports = (sequelize) => {
     platforms: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: false,
+    },
+    created: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   });
 };

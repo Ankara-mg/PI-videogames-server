@@ -1,7 +1,7 @@
 const axios = require('axios')
 const { Videogame, Genre } = require('../db');
 
-const maxGames = 100
+const maxGames = 25
 
 module.exports = {
     getVideogames: async function(API_KEY) {
@@ -16,7 +16,6 @@ module.exports = {
                     img: api.data.results[i].background_image,
                     rating: api.data.results[i].rating,
                     genres: api.data.results[i].genres.map(g => g.name),
-                    platforms: api.data.results[i].platforms.map(p => p.platform.name),
                 })
             }
             api = await axios.get(api.data.next) 
@@ -28,9 +27,10 @@ module.exports = {
     searchGames: async function(API_KEY, search){
         var api = await axios.get(`https://api.rawg.io/api/games?key=${API_KEY}`)
         let videogames = []
+        const maxArrayLength = 15
 
         let cont = 0
-        while( cont < maxGames / 20 && videogames.length < 5){
+        while( cont < maxGames / 20 && videogames.length < maxArrayLength){
             for(let i = 0 ; i < api.data.results.length ; i++){
     
                 if(api.data.results[i].name.toLowerCase().includes(search.toLowerCase())){
@@ -44,6 +44,8 @@ module.exports = {
                         platforms: api.data.results[i].platforms.map(p => p.platform.name),
                     })
                 }
+
+                if (videogames.length >= maxArrayLength) break;
             }
             console.log(cont++)
             api = await axios.get(api.data.next) 
@@ -70,7 +72,9 @@ module.exports = {
         }
 
         genres.forEach(g => {
-            Genre.create(g)
+            Genre.findOrCreate({
+                where: {id: g.id, name: g.name}
+            })
         })
 
         return genres;
@@ -87,7 +91,8 @@ module.exports = {
             esrb: api.data.esrb_rating.name,
             genres: api.data.genres.map(g => g.name),
             platforms: api.data.platforms.map(p => p.platform.name),
-            description: api.data.description
+            description: api.data.description,
+            release: api.data.released
         }
 
         return game

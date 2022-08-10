@@ -19,10 +19,12 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     releaseDate: {
-      type: DataTypes.DATEONLY
+      type: DataTypes.DATEONLY,
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP")
     },
     rating: {
       type: DataTypes.FLOAT,
+      defaultValue: 3
     },
     platforms: {
       type: DataTypes.ARRAY(DataTypes.STRING),

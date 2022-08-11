@@ -17,8 +17,13 @@ router.get('/videogames', async(req, res) => {
     const { name } = req.query
 
     try {
-        if(!name)
-            res.status(200).json(await funciones.getVideogames(API_KEY))
+        if(!name){
+            const db = await funciones.getVideogamesDB()
+            const api = await funciones.getVideogamesApi(API_KEY)
+            const games = db.concat(api)
+
+            res.status(200).json(games)
+        }
         else
             res.status(200).json(await funciones.searchGames(API_KEY, name))
     } catch(error){
@@ -46,13 +51,13 @@ router.get('/videogames/:id', async(req, res) => {
 })
 
 
-router.post('/videogame', async(req, res) => {
-    const { id , name } = req.body
+router.post('/videogame/create', async(req, res) => {
+    const game = req.body
 
     try {
-        res.status(200).json(await funciones.createGame(id, name))
+        res.status(200).json(await funciones.createGame(game))
     } catch (error) {
-        res.status(404).send('Error en alguno de los datos provistos')        
+        res.status(404).send({error})
     }
 })
 

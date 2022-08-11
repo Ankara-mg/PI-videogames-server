@@ -4,7 +4,21 @@ const { Videogame, Genre } = require('../db');
 const maxGames = 25
 
 module.exports = {
+    
     getVideogames: async function(API_KEY) {
+        const db = await getVideogamesDB()
+        const api = await getVideogamesApi(API_KEY)
+        const games = db.concat(api)
+
+        return games
+    },
+
+    getVideogamesDB: async function (){
+        const db = await Videogame.findAll()
+        return db
+    },
+
+    getVideogamesApi: async function(API_KEY) {
         let api = await axios.get(`https://api.rawg.io/api/games?key=${API_KEY}`)
         let videogames = []
         
@@ -23,7 +37,7 @@ module.exports = {
 
         return videogames
     },
-    
+
     searchGames: async function(API_KEY, search){
         var api = await axios.get(`https://api.rawg.io/api/games?key=${API_KEY}`)
         let videogames = []
@@ -98,18 +112,23 @@ module.exports = {
         return game
     },
 
-    createGame: async function(id, name) {
+    createGame: async function(newGame) {
 
-        if(!id || !name){
-            throw 'Faltan datos obligatorios'
+        const { name, description, releaseDate, platforms, genres, rating, created } = newGame
+
+        if(!name || !description || !platforms || !genres){
+            throw 'Faltan datos'
         }
-        
-        const newVideogame = {
-            id,
+
+        let newVideogame = await Videogame.create({
             name,
-            created: true
-        }
-        Videogame.create(newVideogame)
+            description,
+            releaseDate,
+            rating,
+            platforms,
+            genres,
+            created,
+        })
 
         return newVideogame
     }

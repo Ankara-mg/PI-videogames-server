@@ -7,6 +7,7 @@ module.exports = (sequelize) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: UUIDV1,
+      unique: true,
       allowNull: false,
       primaryKey: true
     },
@@ -34,5 +35,7 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     }
+  },{
+    timestamps: false,
   });
 };

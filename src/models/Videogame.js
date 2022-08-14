@@ -19,6 +19,9 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    image: {
+      type: DataTypes.STRING,
+    },
     releaseDate: {
       type: DataTypes.DATEONLY,
       defaultValue: sequelize.literal("CURRENT_TIMESTAMP")

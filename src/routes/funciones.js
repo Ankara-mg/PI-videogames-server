@@ -14,7 +14,15 @@ module.exports = {
     },
 
     getVideogamesDB: async function (){
-        const db = await Videogame.findAll()
+        const db = await Videogame.findAll({
+            include: [{
+                model: Genre,
+                attributes: ['name'],
+                through: {
+                    attributes: []
+                }
+            }]
+        })
         return db
     },
 
@@ -29,7 +37,7 @@ module.exports = {
                     name: api.data.results[i].name,
                     img: api.data.results[i].background_image,
                     rating: api.data.results[i].rating,
-                    genres: api.data.results[i].genres.map(g => g.name),
+                    genres: api.data.results[i].genres.map(g => g),
                 })
             }
             api = await axios.get(api.data.next) 
@@ -91,7 +99,9 @@ module.exports = {
             })
         })
 
-        return genres;
+        const allGenres = await Genre.findAll()
+
+        return allGenres;
     },
 
     getOneVideogame: async function(API_KEY, id) {
@@ -114,21 +124,30 @@ module.exports = {
 
     createGame: async function(newGame) {
 
-        const { name, description, releaseDate, platforms, genres, rating, created } = newGame
+        const { name, description, image, releaseDate, platforms, genres, rating, created } = newGame
 
         if(!name || !description || !platforms || !genres){
             throw 'Faltan datos'
         }
 
+        const genresDb = await Genre.findAll({
+            where: {name : genres}
+        })
+
+        console.log(genresDb)
+
         let newVideogame = await Videogame.create({
             name,
             description,
+            image,
             releaseDate,
             rating,
             platforms,
             genres,
             created,
         })
+
+        newVideogame.addGenre(genresDb)
 
         return newVideogame
     }

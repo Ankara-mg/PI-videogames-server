@@ -47,10 +47,12 @@ module.exports = {
         return videogames
     },
 
-    searchGames: async function(API_KEY, search){
+    searchGames: async function(API_KEY, buscar){
         var api = await axios.get(`https://api.rawg.io/api/games?key=${API_KEY}`)
         let videogames = []
         const maxArrayLength = 15
+
+        const search = buscar.toString().toLowerCase()
 
         const fromDb = await Videogame.findAll({
             limit: 15,
@@ -63,26 +65,32 @@ module.exports = {
                 through: {
                     attributes: []
                 }
-            }]
+            }],
         })
 
         let cont = 0
-        while( cont < maxGames / 20 && videogames.length < maxArrayLength && fromDb < maxArrayLength){
+
+        while( cont < maxGames / 20 && videogames.length < maxArrayLength){
+            
             for(let i = 0 ; i < api.data.results.length ; i++){
-    
-                if(api.data.results[i].name.toLowerCase().includes(search.toLowerCase())){
+                 
+                if (videogames.length >= maxArrayLength) break;
+
+                let currGameName = api.data.results[i].name.toString().toLowerCase()
+
+                console.log(currGameName)
+
+                if(currGameName.includes(search)){
                     videogames.push({
                         id: api.data.results[i].id,
                         name: api.data.results[i].name,
                         img: api.data.results[i].background_image,
                         rating: api.data.results[i].rating,
-                        esrb: api.data.results[i].esrb_rating.name,
                         genres: api.data.results[i].genres.map(g => g),
                         platforms: api.data.results[i].platforms.map(p => p.platform.name),
                     })
                 }
 
-                if (videogames.length >= maxArrayLength) break;
             }
             console.log(cont++)
             api = await axios.get(api.data.next) 
@@ -93,7 +101,7 @@ module.exports = {
         if(response.length < 1){
             throw 'No se encontraron videojuegos'
         } else {
-            return response
+            return response.slice(0, 15)
         }
 
     },
@@ -165,7 +173,7 @@ module.exports = {
             img = undefined
         }
 
-        if(typeof(rating) === 'string'){
+        if(typeof(rating) === 'string' && rating.length === 0){
             rating = undefined
         }
 

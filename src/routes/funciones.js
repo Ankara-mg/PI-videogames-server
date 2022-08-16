@@ -129,14 +129,11 @@ module.exports = {
                     attributes: ['name'],
                     through: {
                         attributes: []
-                    }
+                    } 
                 }]
             })
-            
-            
-
-
             return game
+            
         } else {
             const api = await axios.get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`)
     
@@ -157,17 +154,28 @@ module.exports = {
 
     createGame: async function(newGame) {
 
-        const { name, description, img, release, platforms, genres, rating, created } = newGame
+        const { name, description, platforms, genres, created } = newGame
+        let { img, release, rating } = newGame
 
         if(!name || !description || !platforms || !genres){
             throw 'Faltan datos obligatorios'
         }
 
+        if(img.length == 0 ){
+            img = undefined
+        }
+
+        if(typeof(rating) === 'string'){
+            rating = undefined
+        }
+
+        if(release.length === 0){
+            release = undefined
+        }
+
         const genresDb = await Genre.findAll({
             where: {name : genres}
         })
-
-        console.log(genresDb)
 
         let newVideogame = await Videogame.create({
             name,

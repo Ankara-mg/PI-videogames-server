@@ -1,7 +1,8 @@
 const axios = require('axios')
 const { Videogame, Genre } = require('../db');
+const sequelize = require('sequelize')
 
-const maxGames = 25
+const maxGames = 100
 
 module.exports = {
     
@@ -51,8 +52,22 @@ module.exports = {
         let videogames = []
         const maxArrayLength = 15
 
+        const fromDb = await Videogame.findAll({
+            limit: 15,
+            where: {
+                name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), 'LIKE', '%' + search + '%')
+            },
+            include: [{
+                model: Genre,
+                attributes: ['name'],
+                through: {
+                    attributes: []
+                }
+            }]
+        })
+
         let cont = 0
-        while( cont < maxGames / 20 && videogames.length < maxArrayLength){
+        while( cont < maxGames / 20 && videogames.length < maxArrayLength && fromDb < maxArrayLength){
             for(let i = 0 ; i < api.data.results.length ; i++){
     
                 if(api.data.results[i].name.toLowerCase().includes(search.toLowerCase())){
@@ -62,7 +77,7 @@ module.exports = {
                         img: api.data.results[i].background_image,
                         rating: api.data.results[i].rating,
                         esrb: api.data.results[i].esrb_rating.name,
-                        genres: api.data.results[i].genres.map(g => g.name),
+                        genres: api.data.results[i].genres.map(g => g),
                         platforms: api.data.results[i].platforms.map(p => p.platform.name),
                     })
                 }
@@ -73,10 +88,12 @@ module.exports = {
             api = await axios.get(api.data.next) 
         }
     
-        if(videogames.length < 1){
+        const response = fromDb.concat(videogames)
+
+        if(response.length < 1){
             throw 'No se encontraron videojuegos'
         } else {
-            return videogames
+            return response
         }
 
     },
@@ -105,29 +122,45 @@ module.exports = {
     },
 
     getOneVideogame: async function(API_KEY, id) {
-        const api = await axios.get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`)
+        if(/[a-zA-Z]/.test(id)){
+            const game =  await Videogame.findByPk(id, {
+                include: [{
+                    model: Genre,
+                    attributes: ['name'],
+                    through: {
+                        attributes: []
+                    }
+                }]
+            })
+            
+            
 
-        const game = {
-            id: api.data.id,
-            name: api.data.name,
-            img: api.data.background_image,
-            rating: api.data.rating,
-            esrb: api.data.esrb_rating.name,
-            genres: api.data.genres.map(g => g.name),
-            platforms: api.data.platforms.map(p => p.platform.name),
-            description: api.data.description,
-            release: api.data.released
+
+            return game
+        } else {
+            const api = await axios.get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`)
+    
+            const game = {
+                id: api.data.id,
+                name: api.data.name,
+                img: api.data.background_image,
+                rating: api.data.rating,
+                genres: api.data.genres.map(g => g),
+                platforms: api.data.platforms.map(p => p.platform.name),
+                description: api.data.description,
+                release: api.data.released
+            }
+    
+            return game
         }
-
-        return game
     },
 
     createGame: async function(newGame) {
 
-        const { name, description, image, releaseDate, platforms, genres, rating, created } = newGame
+        const { name, description, img, release, platforms, genres, rating, created } = newGame
 
         if(!name || !description || !platforms || !genres){
-            throw 'Faltan datos'
+            throw 'Faltan datos obligatorios'
         }
 
         const genresDb = await Genre.findAll({
@@ -139,8 +172,8 @@ module.exports = {
         let newVideogame = await Videogame.create({
             name,
             description,
-            image,
-            releaseDate,
+            img,
+            release,
             rating,
             platforms,
             genres,

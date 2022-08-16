@@ -19,10 +19,11 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    image: {
+    img: {
       type: DataTypes.STRING,
+      defaultValue: '/assets/images/404.jpg',
     },
-    releaseDate: {
+    release: {
       type: DataTypes.DATEONLY,
       defaultValue: sequelize.literal("CURRENT_TIMESTAMP")
     },

@@ -4,6 +4,7 @@ const { Router } = require('express');
 
 require('dotenv').config();
 const { API_KEY } = process.env;
+const { Videogame } = require('../db.js')
 
 const funciones = require('./funciones')
 
@@ -59,6 +60,18 @@ router.post('/videogame/create', async(req, res) => {
     } catch (error) {
         res.status(404).send({error})
     }
+})
+
+router.get('/henry', async(req, res)=>{
+    
+    const henry = await Videogame.findAll({
+        where: {
+            name: 'Henry'
+        }
+    })
+
+    res.json(henry)
+
 })
 
 module.exports = router;

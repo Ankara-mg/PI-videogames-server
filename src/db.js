@@ -6,6 +6,7 @@ const {
   PGUSER, PGPASSWORD, PGHOST, PGDATABASE
 } = process.env;
 
+console.log(PGUSER, PGPASSWORD, PGHOST, PGDATABASE)
 // postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/videogames
 const sequelize = new Sequelize(`postgres://${PGUSER}:${PGPASSWORD}@${PGHOST}/${PGDATABASE}`, {
   logging: false, // set to console.log to see the raw SQL queries

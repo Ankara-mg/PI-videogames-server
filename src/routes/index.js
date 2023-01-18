@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const path = require('path')
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
 
@@ -73,5 +74,10 @@ router.get('/henry', async(req, res)=>{
     res.json(henry)
 
 })
+
+router.get('*', (req, res) => {
+  res.sendFile(path.resolve('<PATH TO BUILT APP index.html>')) 
+})
+
 
 module.exports = router;

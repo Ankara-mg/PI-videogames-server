@@ -13,6 +13,10 @@ const router = Router();
 // Configurar los routers
 // Ejemplo: router.use('/auth', authRouter);
 
+router.get('/*', (req, res) => {
+    res.sendFile('index.html', { root });
+})
+
 router.get('/videogames', async(req, res) => {
 
     const { name } = req.query

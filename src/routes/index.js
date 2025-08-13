@@ -75,9 +75,9 @@ router.get('/henry', async(req, res)=>{
 
 })
 
-router.get('*', (req, res) => {
+/* router.get('*', (req, res) => {
   res.sendFile(path.resolve('<PATH TO BUILT APP index.html>')) 
-})
+}) */
 
 
 module.exports = router;
